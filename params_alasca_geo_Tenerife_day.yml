@@ -1,0 +1,445 @@
+main:
+  root_dir:             '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5'  # Root directory for calibration manager
+  class:                'SimulParams'          # this is 'CaNaPy' to be compatible with the CaNaPy calibration of 589nm path
+  pixel_pupil:          120                   # Linear dimension of pupil phase array
+  pixel_pitch:          0.008333              # [m] Pitch of the pupil phase array
+  total_time:           0.05              # [s] Total simulation running time
+  time_step:            0.001               # [s] Simulation time step
+  zenithAngleInDeg:     56.0
+
+# --------------------------- Atmosphere ---------------------------
+seeing:
+  class:                'WaveGenerator'
+  constant:             2.5
+  outputs:              ['output']
+
+wind_speed:
+  class:                'WaveGenerator'
+  constant:             [2.9307, 13.5419, 12.6838, 7.2461, 5.7461]
+  outputs:              ['output']
+
+wind_direction:
+  class:                'WaveGenerator'
+  constant:             [0.,0.,0.,0.,0.]
+  outputs:              ['output']
+
+atmo_down:
+  class:                'AtmoEvolution'
+  simul_params_ref:     'main'
+  L0:                   20.0                                        # [m] Outer scale
+  heights:              [124.34, 7310, 12600, 16500, 22500]    # Tenerife
+  Cn2:                  [0.9793, 0.0087, 0.0108, 0.0011, 0.00009999999999998899] # Tenerife
+  extra_delta_time:     [7.4170045e-07, 4.3604876e-05, 7.5160252e-05, 9.8424139e-05, 0.00013421474]
+  seed:                 1
+  pixel_phasescreens:   32768
+  fov_in_m:             8
+  inputs:
+    seeing:             'seeing.output'
+    wind_speed:         'wind_speed.output'
+    wind_direction:     'wind_direction.output'
+  outputs:              ['layer_list']
+
+atmo_up:
+  class:                'AtmoEvolution'
+  simul_params_ref:     'main'
+  L0:                   20.0                                        # [m] Outer scale
+  heights:              [124.34, 7310, 12600, 16500, 22500]     # Tenerife
+  Cn2:                  [0.9793, 0.0087, 0.0108, 0.0011, 0.00009999999999998899] # Tenerife
+  extra_delta_time:     [0.0010729761, 0.0010301131, 0.00099855768, 0.00097529378, 0.00093950318]
+  fov_in_m:             8
+  pixel_phasescreens:   32768
+  seed:                 1
+  inputs:
+    seeing:             'seeing.output'
+    wind_speed:         'wind_speed.output'
+    wind_direction:     'wind_direction.output'
+  outputs:              ['layer_list']
+
+
+# --------------------------- Sources ---------------------------
+# LGS for HO correction
+wfs_source:
+  class:                'Source'
+  polar_coordinates:    [0.0, 0.0]        # [arcsec, degrees] source polar coordinates
+  magnitude:            6.3               # source magnitude. Uses n_phot.pro
+  zero_point:           0.0000000389      # Uses n_phot.pro
+  wavelengthInNm:       589               # [nm] wavelength
+  height:               90000             # [m] LGS source altitude
+
+# Laser ranging uplink
+wfs_sat_source:
+  class:                'Source'
+  polar_coordinates:    [0.0, 0.0]        # [arcsec, degrees] source polar coordinates
+  magnitude:            0                 # source magnitude. Uses n_phot.pro
+  wavelengthInNm:       1075              # [nm] wavelength
+  height:               38000000          # [m] source altitude
+
+# Laser ranging downlink
+wfs_ngs_source:
+  class:                'Source'
+  polar_coordinates:    [4.0, 0.0]        # [arcsec, degrees] source polar coordinates
+  magnitude:            0                 # source magnitude. Uses n_phot.pro
+  wavelengthInNm:       1064              # [nm] wavelength
+  height:               38000000          # [m] source altitude
+
+
+# --------------------------- Pupil stop ---------------------------
+pupil_stop: # this is used in the calibration
+  class:                'Pupilstop'
+  tag:                  'CaNaPy_120p_down'
+
+pupil_stop_down:
+  class:                'Pupilstop'
+  tag:                  'CaNaPy_120p_down'
+
+pupil_stop_up:
+  class:                'Pupilstop'
+  tag:                  'CaNaPy_120p_up_monostatic'
+
+
+# --------------------------- Propagation ---------------------------
+prop_down_589nm:
+  class:                'AtmoPropagation'
+  simul_params_ref:     'main'
+  wavelengthInNm:       589
+  #doFresnel:            true
+  source_dict_ref:      ['wfs_source']
+  inputs:
+    atmo_layer_list:    ['atmo_down.layer_list']
+    common_layer_list:  ['pupil_stop_down', 'dm.out_layer:-1']
+  outputs:              ['out_wfs_source_ef']
+
+prop_down_1064nm:
+  class:                'AtmoPropagation'
+  simul_params_ref:     'main'
+  wavelengthInNm:       1064
+  #doFresnel:            true
+  source_dict_ref:      ['wfs_ngs_source']
+  inputs:
+    atmo_layer_list:    ['atmo_down.layer_list']
+    common_layer_list:  ['pupil_stop_down', 'dm.out_layer:-1']
+  outputs:              ['out_wfs_ngs_source_ef']
+
+prop_up_1075nm:
+  class:                'AtmoPropagation'
+  simul_params_ref:     'main'
+  wavelengthInNm:       1075
+  #doFresnel:            true
+  upwards:              true
+  source_dict_ref:      ['wfs_sat_source']
+  inputs:
+    atmo_layer_list:    ['atmo_up.layer_list']
+    common_layer_list:  ['pupil_stop_up','dm_up.out_layer:-1']
+  outputs:              ['out_wfs_sat_source_ef']
+
+prop_up_589nm:
+  class:                'AtmoPropagation'
+  simul_params_ref:     'main'
+  wavelengthInNm:       589
+  #doFresnel:            true
+  upwards:              true
+  source_dict_ref:      ['wfs_source']
+  inputs:
+    atmo_layer_list:    ['atmo_up.layer_list']
+    common_layer_list:  ['pupil_stop_up', 'dm_up.out_layer:-1']
+  outputs:              ['out_wfs_source_ef']
+
+
+# --------------------------- Wavefront sensors ---------------------------
+extended_object:
+  class:                    'ExtendedSource'
+  simul_params_ref:         'main'
+  pixel_scale_psf:          0.040498272 # wavelengthInNm*1e-9/diam*rad2arcsec/pyramid.fft_res
+  wavelengthInNm:           589
+  source_type:              'FROM_PSF'
+  sampling_type:            'POLAR'
+  size_obj:                 0.1
+  sampling_lambda_over_d:   0.333
+  layer_height:             [76769., 79414., 82058., 84703., 87347., 89200., 92636., 95281., 97925.]
+  intensity_profile:        [0.0540, 0.1296, 0.1231, 0.1829, 0.2689, 0.1805, 0.0341, 0.0153, 0.0116]
+  focus_height:             90000
+  initial_psf_data:         'PSF_s3.50asec_fitonly_nm57_steps10_l589nm_n124pix.fits'
+  tt_profile:               [[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.]]
+  inputs:
+    psf:                    ['psf_589nm_up.out_psf']
+  outputs:                  ['coeff']
+
+pyramid:
+  class:                    'ExtSourcePyramid'
+  simul_params_ref:         'main'
+  pup_diam:                 40.
+  pup_dist:                 72.
+  fov:                      5.0
+  fov_errinf:               0.1
+  fov_errsup:               30.0
+  mod_amp:                  0.0
+  output_resolution:        240
+  fft_res:                  3.0
+  wavelengthInNm:           589
+  inputs:
+    in_ef:                  'prop_down_589nm.out_wfs_source_ef'
+    ext_source_coeff:       'extended_object.coeff'
+  outputs:                  ['out_i']
+
+slopec:
+  class:                    'PyrSlopec'
+  pupdata_object:           'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_bn1_th0.30a0.30b'
+  sn_object:                'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_bn1_th0.30a0.30b_s3.50asec_ave_steps500_extObj_monostatic'
+  thr_value:                0.0
+  inputs:
+    in_pixels:              'detector.out_pixels'
+  outputs:                  ['out_slopes']
+
+pyramid_ngs:
+  class:                    'ModulatedPyramid'
+  simul_params_ref:         'main'
+  pup_diam:                 40.
+  pup_dist:                 72.
+  fov:                      5.0
+  fov_errinf:               0.1
+  fov_errsup:               30.0
+  mod_amp:                  0.0
+  output_resolution:        240
+  fft_res:                  3.0
+  wavelengthInNm:           1064
+  inputs:
+    in_ef:                  'ef_prod_ngs.out_ef'
+  outputs:                  ['out_i']
+
+slopec_ngs:
+  class:                'PyrSlopec'
+  pupdata_object:       'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_bn1_th0.30a0.30b'
+  sn_object:            'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_bn1_th0.30a0.30b_s3.50asec_ave_steps500'
+  thr_value:             0.0
+  inputs:
+    in_pixels:          'detector_ngs.out_pixels'
+  outputs:              ['out_slopes']
+
+
+# --------------------------- Detectors ---------------------------
+detector:
+  class:                'CCD'
+  simul_params_ref:     'main'
+  size:                 [240,240]             # Detector size in pixels
+  dt:                   0.001                # [s] Detector integration time
+  bandw:                10                    # [nm] Sensor bandwidth
+  #photon_noise:         true                  # activate photon noise
+  #readout_noise:        true                  # activate readout noise
+  #readout_level:        0.8                   # readout noise in [e-/pix/frame]
+  inputs:
+      in_i:             'pyramid.out_i'
+  outputs:              ['out_pixels']
+
+detector_ngs:
+  class:                'CCD'
+  simul_params_ref:     'main'
+  size:                 [240,240]            # Detector size in pixels
+  dt:                   0.001                 # [s] Detector integration timef
+  bandw:                10                    # [nm] Sensor bandwidth
+  #photon_noise:         true                   # activate photon noise
+  #readout_noise:        true                   # activate readout noise
+  #readout_level:        0.8                    # readout noise in [e-/pix/frame]
+  inputs:
+    in_i:               'pyramid_ngs.out_i'
+  outputs:              [ 'out_pixels' ]
+
+
+# --------------------------- Modal reconstructor ---------------------------
+modalrec:
+  class:                'Modalrec'
+  intmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps10_extObj_monostatic'                 # interaction matrix tag
+  recmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps10_extObj_monostatic'                 # reconstruction matrix tag
+  inputs:
+    in_slopes:          'slopec.out_slopes'
+  outputs:              ['out_modes']
+
+modalrec_ngs:
+  class:                'Modalrec'
+  intmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps100'                 # interaction matrix tag
+  recmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps100'                 # reconstruction matrix tag
+  inputs:
+    in_slopes:          'slopec_ngs.out_slopes'
+  outputs:              ['out_modes']
+
+
+# --------------------------- Control ---------------------------
+control:
+  class:                'Integrator'
+  simul_params_ref:     'main'
+  delay:                1                        # Total temporal delay in time steps
+  int_gain:             [0.0, 0.0, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]     # Integrator gain (for 'INT' control)
+  #int_gain:             [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.] # Integrator gain (for 'INT' control)
+  inputs:
+    delta_comm:         'modalrec.out_modes'
+  outputs:              ['out_comm']
+
+control_ngs:
+  class:                'Integrator'
+  simul_params_ref:     'main'
+  delay:                1                         # Total temporal delay in time steps
+  int_gain:             [0.5, 0.5, 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.] # Integrator gain (for 'INT' control)
+  #int_gain:             [0.5, 0.5, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3]     # Integrator gain (for 'INT' control)
+  #int_gain:             [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.] # Integrator gain (for 'INT' control)
+  inputs:
+    delta_comm:         'modalrec_ngs.out_modes'
+  outputs:              ['out_comm']
+
+
+# --------------------------- Deformable mirrors ---------------------------
+dm:
+  class:                'DM'
+  simul_params_ref:     'main'
+  ifunc_object:         'CaNaPy_dm_zonal_ifunc_120pix'        # modes-to-commands matrix tag
+  m2c_object:           'CaNaPy_dm_m2c_59masters_57modes'     # DM command-to-phase influence matrix tag
+  nmodes:               57
+  height:               0                                     # DM height [m]
+  inputs:
+    in_command:         'control.out_comm'
+  outputs:              ['out_layer']
+
+command_copy:
+  class:                'BaseOperation'
+  constant_mul:          1.0
+  inputs:
+    in_value1:          'control.out_comm'
+  outputs:              ['out_value']
+
+dm_up:
+  class:                'DM'
+  simul_params_ref:     'main'
+  ifunc_object:         'CaNaPy_dm_zonal_ifunc_120pix'        # modes-to-commands matrix tag
+  m2c_object:           'CaNaPy_dm_m2c_59masters_57modes'     # DM command-to-phase influence matrix tag
+  nmodes:               57
+  height:               0                                     # DM height [m]
+  inputs:
+    in_command:         'command_copy.out_value'
+  outputs:              ['out_layer']
+
+dm_ngs:
+  class:                'DM'
+  simul_params_ref:     'main'
+  ifunc_object:         'CaNaPy_dm_zonal_ifunc_120pix'        # modes-to-commands matrix tag
+  m2c_object:           'CaNaPy_dm_m2c_59masters_57modes'     # DM command-to-phase influence matrix tag
+  nmodes:               57
+  height:               0                                     # DM height [m]
+  inputs:
+    in_command:         'control_ngs.out_comm'
+  outputs:              ['out_layer']
+
+ef_prod_ngs:
+  class:                'ElectricFieldCombinator'
+  inputs:
+    in_ef1:             ['prop_down_1064nm.out_wfs_ngs_source_ef']
+    in_ef2:             ['dm_ngs.out_layer:-1']
+  outputs:              [ 'out_ef' ]
+
+ef_prod_sat:
+  class:                'ElectricFieldCombinator'
+  inputs:
+    in_ef1:             ['dm_ngs.out_layer:-1']
+    in_ef2:             ['prop_up_1075nm.out_wfs_sat_source_ef']
+  outputs:              [ 'out_ef' ]
+
+ef_reflection:
+  class:                'ElectricFieldReflection'
+  inputs:
+    in_ef:              ['prop_up_589nm.out_wfs_source_ef']
+  outputs:              ['out_ef']
+
+# --------------------------- Cameras ---------------------------
+psf_589nm_up:
+  class:                'PSF'
+  simul_params_ref:     'main'
+  wavelengthInNm:       589
+  nd:                   3
+  inputs:
+    in_ef:              'ef_reflection.out_ef'
+  outputs:              [ 'out_psf', 'out_sr' ]
+
+psf_589nm_down:
+  class: 'PSF'
+  simul_params_ref: 'main'
+  wavelengthInNm: 589
+  nd: 3
+  inputs:
+    in_ef: 'prop_down_589nm.out_wfs_source_ef'
+  outputs: ['out_sr']
+
+psf_1075nm:
+  class:                'PSF'
+  simul_params_ref:     'main'
+  wavelengthInNm:       1075                # [nm] Imaging wavelength
+  nd:                   3                   # padding coefficient for PSF computation
+  inputs:
+    in_ef:              'ef_prod_sat.out_ef'
+  outputs:              ['out_psf','out_sr']
+
+power_loss_1075nm:
+  class:                'PowerLoss'
+  simul_params_ref:     'main'
+  wavelengthInNm:       1075
+  nd:                   3
+  prop_distance:        38000000.
+  receiver_diam:        0.1
+  inputs:
+    se_sr:              'psf_1075nm.out_sr'
+  outputs:              ['out_power_loss']
+
+psf_1064nm:
+  class:                'PSF'
+  simul_params_ref:     'main'
+  wavelengthInNm:       1064               # [nm] Imaging wavelength
+  nd:                   3                  # padding coefficient for PSF computation
+  inputs:
+    in_ef:              'ef_prod_ngs.out_ef'
+  outputs:              ['out_psf','out_sr']
+
+data_store:
+  class:                'DataStore'
+  store_dir:            '/home2/bstadler/ALASCA_LEO/SPECULA'
+  inputs:
+    input_list:         ['psf_589_up-psf_589nm_up.out_psf', 'sr_589_up-psf_589nm_up.out_sr', 'sr_ngs-psf_1064nm.out_sr', 'sr_sat-psf_1075nm.out_sr','powerloss-power_loss_1075nm.out_power_loss']
+
+modal_analysis_589nm_up:
+  class: 'ModalAnalysis'
+  type_str: 'Zernike'
+  wavelengthInNm: 589
+  nmodes: 250
+  npixels: 120
+  obsratio: 0.0
+  inputs:
+    in_ef: 'ef_reflection.out_ef'
+  outputs: [ 'out_modes' ]
+
+modal_analysis_589nm:
+  class: 'ModalAnalysis'
+  type_str: 'Zernike'
+  wavelengthInNm: 589
+  nmodes: 250
+  npixels: 120
+  obsratio: 0.0
+  inputs:
+    in_ef: 'prop_down_589nm.out_wfs_source_ef'
+  outputs: [ 'out_modes' ]
+
+modal_analysis_1064nm:
+  class: 'ModalAnalysis'
+  type_str: 'Zernike'
+  wavelengthInNm: 1064
+  nmodes: 250
+  npixels: 120
+  obsratio: 0.0
+  inputs:
+    in_ef: 'ef_prod_ngs.out_ef'
+  outputs: [ 'out_modes' ]
+
+modal_analysis_1550nm:
+  class: 'ModalAnalysis'
+  type_str: 'Zernike'
+  wavelengthInNm: 1075
+  nmodes: 250
+  npixels: 120
+  obsratio: 0.0
+  inputs:
+    in_ef: 'ef_prod_sat.out_ef'
+  outputs: [ 'out_modes' ]
