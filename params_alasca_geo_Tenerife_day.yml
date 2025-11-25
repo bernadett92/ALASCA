@@ -398,7 +398,7 @@ data_store:
   class:                'DataStore'
   store_dir:            '/home2/bstadler/ALASCA_LEO/SPECULA'
   inputs:
-    input_list:         ['psf_589_up-psf_589nm_up.out_psf', 'sr_589_up-psf_589nm_up.out_sr', 'sr_ngs-psf_1064nm.out_sr', 'sr_sat-psf_1075nm.out_sr','powerloss-power_loss_1075nm.out_power_loss']
+    input_list:         ['psf_589_up-psf_589nm_up.out_psf', 'sr_589_up-psf_589nm_up.out_sr', 'sr_589_down-psf_589nm_down.out_sr', 'sr_ngs-psf_1064nm.out_sr', 'sr_sat-psf_1075nm.out_sr','powerloss-power_loss_1075nm.out_power_loss']
 
 modal_analysis_589nm_up:
   class: 'ModalAnalysis'
