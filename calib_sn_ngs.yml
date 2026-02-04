@@ -1,0 +1,106 @@
+
+pyr_sn:
+  class: 'SnCalibrator'
+  output_tag:       'alasca_1m_40sa_ngs_s3.5asec'
+  inputs:
+    in_slopes: 'slopec_ngs.out_slopes'
+
+seeingR:
+  class:             'RandomGenerator'
+  amp:               0.5
+  constant:          3.5                  # range of [3.0, 4.0]
+  distribution:      'UNIFORM'
+  outputs: ['output']
+
+atmoR:
+  class:                'AtmoRandomPhase'
+  simul_params_ref:  'main'
+  L0:                   40                   # [m] Outer scale
+  source_dict_ref:      ['wfs_ngs_source']
+  inputs:
+    seeing: 'seeingR.output'
+    pupilstop: 'pupil_stop_down'
+  outputs: ['out_wfs_ngs_source_ef']
+
+modal_analysisR:
+  class: 'ModalAnalysis'
+  ifunc_inv_object: 'CaNaPy_dm_ifunc_120pix_59masters_57modes_inv'
+  inputs:
+    in_ef: 'atmoR.out_wfs_ngs_source_ef'
+  outputs: ['out_modes']
+
+scaleR:
+  class:  'BaseOperation'
+  constant_mul: 0.95
+  inputs:
+    in_value1: 'modal_analysisR.out_modes'
+  outputs: ['out_value']
+
+dmR:
+  class: 'DM'
+  simul_params_ref: 'main'
+  ifunc_object: 'CaNaPy_dm_ifunc_120pix_59masters_57modes'
+  height: 0
+  inputs:
+    in_command: 'scaleR.out_value'
+  outputs: ['out_layer']
+
+ef_combinator_override:
+  class: 'ElectricFieldCombinator'
+  inputs:
+    in_ef1: 'atmoR.out_wfs_ngs_source_ef'
+    in_ef2: 'dmR.out_layer'
+  outputs: ['out_ef']
+
+main_override:
+  total_time:  10.000
+
+pyramid_ngs_override:
+  inputs:
+    in_ef: 'ef_combinator.out_ef'
+
+remove: [
+    #"main",
+    "seeing",
+    "wind_speed",
+    "wind_direction",
+    "atmo",
+    "wfs_source",
+    "wfs_sat_source",
+    #"wfs_ngs_source",
+    "pupil_stop",
+    #"pupil_stop_down",
+    "pupil_stop_up",
+    "prop_down_589nm",
+    #"prop_down_1064nm",
+    "prop_up_1075nm",
+    "prop_up_589nm",
+    "extended_object",
+    "pyramid",
+    "slopec",
+    #"pyramid_ngs",
+    #"slopec_ngs",
+    "detector",
+    #"detector_ngs",
+    "modalrec",
+    "modalrec_ngs",
+    "control",
+    "control_ngs",
+    "dm",
+    "dm_ngs",
+    "ef_prod_ngs",
+    "ef_prod_sat",
+    "ef_reflection",
+    "psf_589nm_up",
+    "psf_589nm_down",
+    "psf_1075nm",
+    "power_loss_1075nm",
+    "psf_1064nm",
+    "data_store",
+    "modal_analysis_589nm_up",
+    "modal_analysis_589nm",
+    "modal_analysis_1064nm",
+    "modal_analysis_1550nm",
+    #"modes_disp",
+    #"psf_disp"
+]

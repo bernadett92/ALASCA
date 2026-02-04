@@ -1,0 +1,70 @@
+
+pyr_pupdata:
+  class: 'PyrPupdataCalibrator'
+  thr1: 0.1
+  thr2: 0.25
+  #min_obstruction_ratio: 0.2
+  obs_thr: 0.95
+  output_tag:        'alasca_1m_40sa'
+  inputs:
+    in_i: 'pyramid.out_i'
+
+prop_down_589nm_override:
+  inputs:
+    common_layer_list: ['pupil_stop_down']
+
+main_override:
+  total_time:  0.001
+
+pyramid_override:
+  mod_amp:           10.0                     # Modulation radius (in lambda/D units)
+  inputs:
+    in_ef:                  'prop_down_589nm.out_wfs_source_ef'
+    ext_source_coeff:       'extended_object.coeff'
+
+remove: [
+    #"main",
+    "seeing",
+    "wind_speed",
+    "wind_direction",
+    "atmo",
+    #"wfs_source",
+    "wfs_sat_source",
+    "wfs_ngs_source",
+    "pupil_stop",
+    #"pupil_stop_down",
+    "pupil_stop_up",
+    #"prop_down_589nm",
+    "prop_down_1064nm",
+    "prop_up_1075nm",
+    "prop_up_589nm",
+    #"extended_object",
+    #"pyramid",
+    "slopec",
+    "pyramid_ngs",
+    "slopec_ngs",
+    #"detector",
+    "detector_ngs",
+    "modalrec",
+    "modalrec_ngs",
+    "control",
+    "control_ngs",
+    "ef_combinator",
+    "dm",
+    "dm_ngs",
+    "ef_prod_ngs",
+    "ef_prod_sat",
+    "ef_reflection",
+    "psf_589nm_up",
+    "psf_589nm_down",
+    "psf_1075nm",
+    "power_loss_1075nm",
+    "psf_1064nm",
+    "data_store",
+    "modal_analysis_589nm_up",
+    "modal_analysis_589nm",
+    "modal_analysis_1064nm",
+    "modal_analysis_1550nm",
+    #"modes_disp",
+    #"psf_disp"
+]

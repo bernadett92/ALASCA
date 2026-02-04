@@ -1,0 +1,174 @@
+# Interaction Matrix and Reconstructor Calibration
+# ================================================
+
+# Push-pull command generator
+pushpull:
+  class:     'PushPullGenerator'
+  nmodes:    57                         # Number of DM actuators
+  ncycles:   200                          # Number of push-pull cycles
+  vect_amplitude_data: 'pushpull_57modes_amp20'  # Amplitude vector
+  outputs:   ['output']
+
+# Interaction matrix calibrator
+im_calibrator:
+  class:     'ImCalibrator'
+  nmodes:    57                         # Number of modes to calibrate
+  im_tag:    'im_alasca_1m_40sa_mn57_pc_s3.5asec_200c'  # Output IM filename
+  overwrite: true                         # Overwrite existing files
+  inputs:
+    in_slopes:   'slopec.out_slopes'      # WFS slopes input
+    in_commands: 'pushpull.output'        # Push-pull commands
+
+# Reconstructor calibrator
+rec_calibrator:
+  class:     'RecCalibrator'
+  nmodes:    57                         # Number of modes
+  rec_tag:   'rec_alasca_1m_40sa_mn57_pc_s3.5asec_200c' # Output REC filename
+  overwrite: true                         # Overwrite existing files
+  inputs:
+    in_intmat:   'im_calibrator.out_intmat'  # Connect to IM output
+
+# Override main simulation parameters
+main_override:
+  time_step:         0.001                # [s] Simulation time step
+  total_time:        22.8                 # 57 modes × 2 (push+pull) x 200 (cycles) × 0.001s
+
+seeingR:
+  class:             'RandomGenerator'
+  amp:               0.5
+  constant:          2.5                  # range of [3.0, 4.0]
+  distribution:      'UNIFORM'
+  outputs: ['output']
+
+atmoR:
+  class:                'AtmoRandomPhase'
+  simul_params_ref:  'main'
+  L0:                   20                   # [m] Outer scale
+  update_interval:      2
+  source_dict_ref:      ['wfs_source']
+  inputs:
+    seeing: 'seeingR.output'
+    pupilstop: 'pupil_stop_down'
+  outputs: ['out_wfs_source_ef']
+
+modal_analysisR:
+  class: 'ModalAnalysis'
+  ifunc_inv_object: 'CaNaPy_dm_ifunc_120pix_59masters_57modes_inv'
+  inputs:
+    in_ef: 'atmoR.out_wfs_source_ef'
+  outputs: ['out_modes']
+
+scaleR:
+  class:  'BaseOperation'
+  constant_mul: 0.9
+  inputs:
+    in_value1: 'modal_analysisR.out_modes'
+  outputs: ['out_value']
+
+dmR:
+  class: 'DM'
+  simul_params_ref: 'main'
+  ifunc_object:         'CaNaPy_dm_zonal_ifunc_120pix'        # modes-to-commands matrix tag
+  m2c_object:           'CaNaPy_dm_m2c_59masters_57modes'     # DM command-to-phase influence matrix tag
+  nmodes:               57
+  height: 0
+  inputs:
+    in_command: 'scaleR.out_value'
+  outputs: ['out_layer']
+
+prop_down_589nm_override:
+  source_dict_ref:   ['wfs_source']
+  inputs:
+    common_layer_list: ['pupil_stop_down', 'dmR.out_layer', 'dm.out_layer']  # Only pupil + DM
+  outputs:           ['out_wfs_source_ef']
+
+ef_combinator_override:
+  class: 'ElectricFieldCombinator'
+  inputs:
+    in_ef1: 'atmoR.out_wfs_source_ef'
+    in_ef2: 'prop_down_589nm.out_wfs_source_ef'
+  outputs: ['out_ef']
+
+extended_object_override:
+  class:                    'ExtendedSource'
+  simul_params_ref:         'main'
+  pixel_scale_psf:          0.040498272 # wavelengthInNm*1e-9/diam*rad2arcsec/pyramid.fft_res
+  wavelengthInNm:           589
+  source_type:              'GAUSS' # 'FROM_PSF' # 
+  sampling_type:            'CARTESIAN' # 'POLAR' # 
+  size_obj:                 0.2
+  sampling_lambda_over_d:   0.333
+  layer_height:             [76769., 79414., 82058., 84703., 87347., 89200., 92636., 95281., 97925.]
+  intensity_profile:        [0.0540, 0.1296, 0.1231, 0.1829, 0.2689, 0.1805, 0.0341, 0.0153, 0.0116]
+  focus_height:             85000
+  #initial_psf_data:         'PSF_s3.50asec_fitonly_nm57_steps10_l589nm_n124pix.fits'
+  tt_profile:               [[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.]]
+  #inputs:
+  #  psf:                    ['psf_589nm_up.out_psf']
+  outputs:                  ['coeff']
+
+pyramid_override:
+  mod_amp:           0.0
+  inputs:
+    in_ef:              'ef_combinator.out_ef'
+    ext_source_coeff:   'extended_object.coeff'
+
+# Override DM to use calibration commands
+dm_override:
+  sign: 1
+  inputs:
+    in_command: 'pushpull.output'         # Connect to push-pull generator
+
+# Disable noise for clean measurements
+detector_override:
+  dt:            0.001                    # [s] Detector integration time
+  photon_noise:   false                   # No photon noise
+  readout_noise:  false                   # No read noise
+  excess_noise:   false                   # No read noise
+
+# Remove unnecessary objects during calibration
+remove: [
+    #"main",
+    "seeing",
+    "wind_speed",
+    "wind_direction",
+    "atmo",
+    #"wfs_source",
+    "wfs_sat_source",
+    "wfs_ngs_source",
+    "pupil_stop",
+    #"pupil_stop_down",
+    "pupil_stop_up",
+    #"prop_down_589nm",
+    "prop_down_1064nm",
+    "prop_up_1075nm",
+    "prop_up_589nm",
+    #"extended_object",
+    #"pyramid",
+    #"slopec",
+    "pyramid_ngs",
+    "slopec_ngs",
+    #"detector",
+    "detector_ngs",
+    "modalrec",
+    "modalrec_ngs",
+    "control",
+    "control_ngs",
+    #"dm",
+    "dm_ngs",
+    "ef_prod_ngs",
+    "ef_prod_sat",
+    "ef_reflection",
+    "psf_589nm_up",
+    "psf_589nm_down",
+    "psf_1075nm",
+    "power_loss_1075nm",
+    "psf_1064nm",
+    "data_store",
+    "modal_analysis_589nm_up",
+    "modal_analysis_589nm",
+    "modal_analysis_1064nm",
+    "modal_analysis_1550nm",
+    #"modes_disp",
+    #"psf_disp"
+]
