@@ -87,6 +87,7 @@ prop_down_589nm:
   simul_params_ref:     'main'
   doFresnel:            true
   wavelengthInNm:       589
+  padding_factor:       3
   source_dict_ref:      ['wfs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_down']
@@ -98,6 +99,7 @@ prop_down_1064nm:
   simul_params_ref:     'main'
   doFresnel:            true
   wavelengthInNm:       1064
+  padding_factor:       3
   source_dict_ref:      ['wfs_ngs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_down']
@@ -110,6 +112,7 @@ prop_up_1075nm:
   upwards:              true
   doFresnel:            true
   wavelengthInNm:       1075
+  padding_factor:       3
   source_dict_ref:      ['wfs_sat_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_up']
@@ -122,6 +125,7 @@ prop_up_589nm:
   upwards:              true
   doFresnel:            true
   wavelengthInNm:       589
+  padding_factor:       3
   source_dict_ref:      ['wfs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_up']
@@ -255,6 +259,7 @@ control:
   simul_params_ref:     'main'
   delay:                1
   int_gain:             [0.0, 0.3, 0.3,  0.3,  0.3, 0.3]     # Integrator gain (for 'INT' control)
+  #int_gain:             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]     # Integrator gain (for 'INT' control)
   n_modes:              [2,   5,   5,    15,   20,  10]      # Number of controlled modes
   ff:                   [1, 1, 0.99, 0.95, 0.9, 0.8]
   inputs:
@@ -384,6 +389,7 @@ ifunc_inv:
 modal_analysis_589nm_up:
   class: 'ModalAnalysis'
   ifunc_inv_ref: 'ifunc_inv'
+  wavelengthInNm: 589
   npixels: 120
   inputs:
     in_ef: 'prop_up_589nm.out_wfs_source_ef'
@@ -393,6 +399,7 @@ modal_analysis_589nm:
   class: 'ModalAnalysis'
   ifunc_inv_ref: 'ifunc_inv'
   npixels: 120
+  wavelengthInNm: 589
   inputs:
     in_ef: 'prop_down_589nm.out_wfs_source_ef'
   outputs: [ 'out_modes' ]
@@ -401,6 +408,7 @@ modal_analysis_1064nm:
   class: 'ModalAnalysis'
   ifunc_inv_ref: 'ifunc_inv'
   npixels: 120
+  wavelengthInNm: 1064
   inputs:
     in_ef: 'ef_prod_ngs.out_ef'
   outputs: [ 'out_modes' ]
@@ -409,6 +417,7 @@ modal_analysis_1550nm:
   class: 'ModalAnalysis'
   ifunc_inv_ref: 'ifunc_inv'
   npixels: 120
+  wavelengthInNm: 1550
   inputs:
     in_ef: 'ef_prod_sat.out_ef'
   outputs: [ 'out_modes' ]
