@@ -82,30 +82,12 @@ prop_down_589nm_override:
     common_layer_list: ['pupil_stop_down', 'dmR.out_layer', 'dm.out_layer']  # Only pupil + DM
   outputs:           ['out_wfs_source_ef']
 
-ef_combinator_override:
+ef_combinator:
   class: 'ElectricFieldCombinator'
   inputs:
     in_ef1: 'atmoR.out_wfs_source_ef'
     in_ef2: 'prop_down_589nm.out_wfs_source_ef'
   outputs: ['out_ef']
-
-extended_object_override:
-  class:                    'ExtendedSource'
-  simul_params_ref:         'main'
-  pixel_scale_psf:          0.040498272 # wavelengthInNm*1e-9/diam*rad2arcsec/pyramid.fft_res
-  wavelengthInNm:           589
-  source_type:              'GAUSS' # 'FROM_PSF' # 
-  sampling_type:            'CARTESIAN' # 'POLAR' # 
-  size_obj:                 0.2
-  sampling_lambda_over_d:   0.333
-  layer_height:             [76769., 79414., 82058., 84703., 87347., 89200., 92636., 95281., 97925.]
-  intensity_profile:        [0.0540, 0.1296, 0.1231, 0.1829, 0.2689, 0.1805, 0.0341, 0.0153, 0.0116]
-  focus_height:             85000
-  #initial_psf_data:         'PSF_s3.50asec_fitonly_nm57_steps10_l589nm_n124pix.fits'
-  tt_profile:               [[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.]]
-  #inputs:
-  #  psf:                    ['psf_589nm_up.out_psf']
-  outputs:                  ['coeff']
 
 pyramid_override:
   mod_amp:           0.0
@@ -158,7 +140,6 @@ remove: [
     "dm_ngs",
     "ef_prod_ngs",
     "ef_prod_sat",
-    "ef_reflection",
     "psf_589nm_up",
     "psf_589nm_down",
     "psf_1075nm",

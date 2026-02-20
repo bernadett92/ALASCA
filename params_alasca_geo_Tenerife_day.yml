@@ -1,5 +1,5 @@
 main:
-  root_dir:             '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5'  # Root directory for calibration manager
+  root_dir:             '/home2/bstadler/ALASCA_GEO_SPECULA/calib/Tenerife_day'  # Root directory for calibration manager
   class:                'SimulParams'          # this is 'CaNaPy' to be compatible with the CaNaPy calibration of 589nm path
   pixel_pupil:          120                   # Linear dimension of pupil phase array
   pixel_pitch:          0.008333              # [m] Pitch of the pupil phase array
@@ -87,7 +87,6 @@ prop_down_589nm:
   simul_params_ref:     'main'
   doFresnel:            true
   wavelengthInNm:       589
-  padding_factor:       3
   source_dict_ref:      ['wfs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_down']
@@ -99,7 +98,6 @@ prop_down_1064nm:
   simul_params_ref:     'main'
   doFresnel:            true
   wavelengthInNm:       1064
-  padding_factor:       3
   source_dict_ref:      ['wfs_ngs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_down']
@@ -112,7 +110,6 @@ prop_up_1075nm:
   upwards:              true
   doFresnel:            true
   wavelengthInNm:       1075
-  padding_factor:       3
   source_dict_ref:      ['wfs_sat_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_up']
@@ -125,7 +122,6 @@ prop_up_589nm:
   upwards:              true
   doFresnel:            true
   wavelengthInNm:       589
-  padding_factor:       3
   source_dict_ref:      ['wfs_source']
   inputs:
     atmo_layer_list:    ['atmo.layer_list_up']
@@ -146,7 +142,7 @@ extended_object:
   sampling_lambda_over_d:   0.333
   layer_height:             [76769., 79414., 82058., 84703., 87347., 89200., 92636., 95281., 97925.]
   intensity_profile:        [0.0540, 0.1296, 0.1231, 0.1829, 0.2689, 0.1805, 0.0341, 0.0153, 0.0116]
-  focus_height:             89500
+  focus_height:             85000
   tt_profile:               [[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.],[0., 0.]]
   inputs:
     psf:                    [ 'psf_589nm_up.out_psf' ]
@@ -219,8 +215,8 @@ detector_ngs:
 # --------------------------- Slope Computer ---------------------------
 slopec:
   class:                 'PyrSlopec'
-  pupdata_object:           'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_bn1_th0.30a0.30b'
-  sn_object:                'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_bn1_th0.30a0.30b_s3.50asec_ave_steps500_extObj_monostatic'
+  pupdata_object:        'alasca_1m_40sa'
+  sn_object:             'alasca_1m_40sa_s3.5asec'
   thr_value:             0.0
   inputs:
     in_pixels:           'detector.out_pixels'
@@ -228,8 +224,8 @@ slopec:
 
 slopec_ngs:
   class:                'PyrSlopec'
-  pupdata_object:       'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_bn1_th0.30a0.30b'
-  sn_object:            'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_bn1_th0.30a0.30b_s3.50asec_ave_steps500'
+  pupdata_object:       'alasca_1m_40sa'
+  sn_object:            'alasca_1m_40sa_ngs_s3.5asec'
   thr_value:             0.0
   inputs:
     in_pixels:          'detector_ngs.out_pixels'
@@ -238,16 +234,16 @@ slopec_ngs:
 # --------------------------- Modal reconstructor ---------------------------
 modalrec:
   class:                'Modalrec'
-  intmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps10_extObj_monostatic'                 # interaction matrix tag
-  recmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl589_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps10_extObj_monostatic'                 # reconstruction matrix tag
+  intmat_object:        'im_alasca_1m_40sa_mn57_pc_s3.5asec_200c'                 # interaction matrix tag
+  recmat_object:        'rec_alasca_1m_40sa_mn57_pc_s3.5asec_200c'                # reconstruction matrix tag
   inputs:
     in_slopes:          'slopec.out_slopes'
   outputs:              ['out_modes']
 
 modalrec_ngs:
   class:                'Modalrec'
-  intmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps100'                 # interaction matrix tag
-  recmat_object:        'CaNaPy_ps120p0.008_pyr40x40_wl1064_fv5.0_ft3.0_ma0_bn1_th0.30a0.30b_mn57_aber_s3.50asec_fitonly_nm57_steps100'                 # reconstruction matrix tag
+  intmat_object:        'im_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c_ngs'          # interaction matrix tag
+  recmat_object:        'rec_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c_ngs'         # reconstruction matrix tag
   inputs:
     in_slopes:          'slopec_ngs.out_slopes'
   outputs:              ['out_modes']
@@ -258,7 +254,7 @@ control:
   class:                'Integrator'
   simul_params_ref:     'main'
   delay:                1
-  int_gain:             [0.0, 0.3, 0.3,  0.3,  0.3, 0.3]     # Integrator gain (for 'INT' control)
+  int_gain:             [0.0, 0.4, 0.4,  0.3,  0.3, 0.3]     # Integrator gain (for 'INT' control)
   #int_gain:             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]     # Integrator gain (for 'INT' control)
   n_modes:              [2,   5,   5,    15,   20,  10]      # Number of controlled modes
   ff:                   [1, 1, 0.99, 0.95, 0.9, 0.8]
@@ -270,7 +266,7 @@ control_ngs:
   class:                'Integrator'
   simul_params_ref:     'main'
   delay:                1                         # Total temporal delay in time steps
-  int_gain:             [0.5, 0.0] # Integrator gain (for 'INT' control)
+  int_gain:             [0.3, 0.0] # Integrator gain (for 'INT' control)
   n_modes:              [2, 55]      # Number of controlled modes
   inputs:
     delta_comm:         'modalrec_ngs.out_modes'
@@ -366,7 +362,7 @@ psf_1064nm:
 
 data_store:
   class:                'DataStore'
-  store_dir:            '/home2/bstadler/ALASCA_GEO_SPECULA'
+  store_dir:            '/home2/bstadler/ALASCA_GEO_SPECULA/results'
   inputs:
     input_list:         ['psf_589_up-psf_589nm_up.out_psf',
                          'phase_ngs-ef_prod_ngs.out_ef',
@@ -421,29 +417,3 @@ modal_analysis_1550nm:
   inputs:
     in_ef: 'ef_prod_sat.out_ef'
   outputs: [ 'out_modes' ]
-
-# modes_disp:
-#   class:            'ModesDisplay'
-#   inputs:
-#     modes:       'modal_analysis_589nm.out_modes'
-#   title:            'residual modes'
-#   xrange:           [0, 100]
-#   yrange:           [-100.0, 100.0]
-
-# psf_disp:
-#   class:            'PsfDisplay'
-#   inputs:
-#     psf:       "psf_589nm_up.out_psf"
-#   title:            'PSF'
-
-# ph_disp:
-#   class:            'PhaseDisplay'
-#   inputs:
-#     phase:       "prop_down_589nm.out_wfs_source_ef"
-#   title:            'PUPIL PHASE'
-
-# dm_disp:
-#   class:            'PhaseDisplay'
-#   inputs:
-#     phase:       "dm.out_layer"
-#   title:            'DM'

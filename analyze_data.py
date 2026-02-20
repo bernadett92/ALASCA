@@ -4,7 +4,7 @@ from astropy.io import fits
 import numpy as np
 import matplotlib.pyplot as plt
 
-data_dir = ("/home2/bstadler/ALASCA_GEO_SPECULA/new")
+data_dir = ("/home2/bstadler/ALASCA_GEO_SPECULA/results/Tenerife_day")
 data = {}
 
 # Load all .fits files in the directory

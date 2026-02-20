@@ -76,15 +76,15 @@ def main():
     # Save amplitude vector
     os.makedirs('calibration/data', exist_ok=True)
 
-    output_file = '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5/data/pushpull_57modes_amp20.fits'
+    output_file = '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5_specula/data/pushpull_57modes_amp20.fits'
     fits.writeto(output_file, amplitudes, overwrite=True)
     print(f"\n✓ Saved scaled amplitude vector: {output_file}")
 
     # Create comparison with uniform amplitudes
-    uniform_amplitudes = np.full(n_actuators, base_amplitude)
-    uniform_file = '/home/bstadler/passata/ALASCA_LEO/calibration_20cm_sh_TURBO50_elevation15deg_PAA25murad_SPECULA/data/pushpull_57modes_amp20.fits'
-    fits.writeto(uniform_file, uniform_amplitudes, overwrite=True)
-    print(f"✓ Saved uniform amplitude vector: {uniform_file}")
+    # uniform_amplitudes = np.full(n_actuators, base_amplitude)
+    # uniform_file = '/home/bstadler/passata/ALASCA_LEO/calibration_20cm_sh_TURBO50_elevation15deg_PAA25murad_SPECULA/data/pushpull_57modes_amp20.fits'
+    # fits.writeto(uniform_file, uniform_amplitudes, overwrite=True)
+    # print(f"✓ Saved uniform amplitude vector: {uniform_file}")
 
     return amplitudes
 

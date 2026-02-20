@@ -9,8 +9,8 @@ from specula.lib.calc_corr_phase_cube import calc_corr_phase_cube
 seed = 1
 L0 = 20
 pixel_square_phasescreens = 8192
-imwidth = 360 # = pixel_pupil*pyr.fft_res
-seeing4calib = 2.5
+imwidth = 124 # = pixel_pupil*pyr.fft_res
+seeing4calib = 3.5
 zenit_angle = 56.0
 pixel_pitch = 0.008333
 pixel_pupil = 120
@@ -20,13 +20,13 @@ psf_lambda = 589 # pyramid wavelength
 pyr_fov = 5.0
 pixel_scale_psf = 0.040498272
 
-dir = '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5'
+dir = '/home/bstadler/passata/ALASCA_072024/calibration/seeing_2.5_specula'
 ifunc_dir = path.join(dir, 'ifunc')
 ps_dir = path.join(dir, 'phasescreens')
 ifunc_tag = 'CaNaPy_dm_ifunc_120pix_59masters_57modes'
 
-aber_name = 'aber_s3.50asec_fitonly_nm57_steps10_specula.fits'
-aber_PSF_name = 'PSF_s3.50asec_fitonly_nm57_steps10_l589nm_n360pix.fits'
+aber_name = 'aber_s3.50asec_fitonly_nm57_steps10.fits'
+aber_PSF_name = 'PSF_s3.50asec_fitonly_nm57_steps10_l589nm_n124pix.fits'
 
 masked = True
 doPsf = True

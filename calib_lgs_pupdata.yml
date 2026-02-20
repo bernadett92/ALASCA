@@ -3,7 +3,6 @@ pyr_pupdata:
   class: 'PyrPupdataCalibrator'
   thr1: 0.1
   thr2: 0.25
-  #min_obstruction_ratio: 0.2
   obs_thr: 0.95
   output_tag:        'alasca_1m_40sa'
   inputs:
@@ -49,12 +48,10 @@ remove: [
     "modalrec_ngs",
     "control",
     "control_ngs",
-    "ef_combinator",
     "dm",
     "dm_ngs",
     "ef_prod_ngs",
     "ef_prod_sat",
-    "ef_reflection",
     "psf_589nm_up",
     "psf_589nm_down",
     "psf_1075nm",

@@ -13,7 +13,7 @@ pushpull:
 im_calibrator:
   class:     'ImCalibrator'
   nmodes:    57                         # Number of modes to calibrate
-  im_tag:    'im_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c'  # Output IM filename
+  im_tag:    'im_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c_ngs'  # Output IM filename
   overwrite: true                         # Overwrite existing files
   inputs:
     in_slopes:   'slopec_ngs.out_slopes'      # WFS slopes input
@@ -23,7 +23,7 @@ im_calibrator:
 rec_calibrator:
   class:     'RecCalibrator'
   nmodes:    57                         # Number of modes
-  rec_tag:   'rec_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c' # Output REC filename
+  rec_tag:   'rec_alasca_1m_40sa_ngs_mn57_pc_s3.5asec_200c_ngs' # Output REC filename
   overwrite: true                         # Overwrite existing files
   inputs:
     in_intmat:   'im_calibrator.out_intmat'  # Connect to IM output
@@ -82,7 +82,7 @@ prop_down_1064nm_override:
     common_layer_list: ['pupil_stop_down', 'dmR.out_layer', 'dm_ngs.out_layer']  # Only pupil + DM
   outputs:           ['out_wfs_ngs_source_ef']
 
-ef_combinator_override:
+ef_combinator:
   class: 'ElectricFieldCombinator'
   inputs:
     in_ef1: 'atmoR.out_wfs_ngs_source_ef'
@@ -139,7 +139,6 @@ remove: [
     #"dm_ngs",
     "ef_prod_ngs",
     "ef_prod_sat",
-    "ef_reflection",
     "psf_589nm_up",
     "psf_589nm_down",
     "psf_1075nm",

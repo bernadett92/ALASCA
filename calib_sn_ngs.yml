@@ -45,7 +45,7 @@ dmR:
     in_command: 'scaleR.out_value'
   outputs: ['out_layer']
 
-ef_combinator_override:
+ef_combinator:
   class: 'ElectricFieldCombinator'
   inputs:
     in_ef1: 'atmoR.out_wfs_ngs_source_ef'
@@ -90,7 +90,6 @@ remove: [
     "dm_ngs",
     "ef_prod_ngs",
     "ef_prod_sat",
-    "ef_reflection",
     "psf_589nm_up",
     "psf_589nm_down",
     "psf_1075nm",
